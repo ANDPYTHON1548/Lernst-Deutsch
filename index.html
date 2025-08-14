@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>APRENDER ALEMÁN – Tutor IA (Tipo Learna) – HTML único</title>
+<style>
+  :root{
+    --bg:#0b0c10;
+    --panel:#121318;
+    --muted:#9aa0a6;
+    --text:#e9eef3;
+    --accent:#6ee7b7;
+    --accent-2:#93c5fd;
+    --accent-3:#fcd34d;
+    --danger:#ef4444;
+    --ok:#22c55e;
+    --shadow: 0 10px 30px rgba(0,0,0,.35);
+    --radius: 16px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:linear-gradient(120deg,#0b0c10 0%,#0f172a 100%);
+    color:var(--text); font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;
+    line-height:1.4;
+  }
+  .app{display:grid; grid-template-columns: 320px 1fr; grid-template-rows: 72px 1fr; height:100vh; gap:14px; padding:14px}
+  header{
+    grid-column:1/3; display:flex; align-items:center; justify-content:space-between;
+    background:rgba(18,19,24,.7); backdrop-filter: blur(12px);
+    border:1px solid rgba(255,255,255,.06); border-radius:var(--radius); padding:12px 16px;
+    box-shadow: var(--shadow);
+  }
+  header .title{display:flex; gap:12px; align-items:center}
+  .logo{width:36px; height:36px; border-radius:50%; background:radial-gradient(circle at 30% 30%, var(--accent), var(--accent-2));}
+  .badge{font-size:12px; color:#081c15; background:var(--accent); padding:3px 8px; border-radius:999px; font-weight:700}
+
+  /* Sidebar */
+  .side{background:rgba(18,19,24,.85); border:1px solid rgba(255,255,255,.06); border-radius:var(--radius); padding:12px; overflow:auto}
+  .side h3{margin:4px 8px 8px; font-size:14px; color:var(--muted); text-transform:uppercase; letter-spacing:.12em}
+  .unit{margin:8px 0; border:1px solid rgba(255,255,255,.06); border-radius:14px; overflow:hidden}
+  .unit summary{cursor:pointer; padding:12px 14px; background:#16181f; list-style:none}
+  .unit details[open] summary{background:#1a1d26}
+  .unit .lessons{padding:10px; display:grid; gap:8px}
+  .chip{display:inline-flex; align-items:center; gap:8px; background:#111827; border:1px solid rgba(255,255,255,.06); color:var(--text); padding:8px 10px; border-radius:12px; cursor:pointer}
+  .chip small{color:var(--muted)}
+  .chip.done{background:rgba(34,197,94,.12); border-color:rgba(34,197,94,.28)}
+
+  /* Main */
+  .main{display:grid; grid-template-rows: 1fr auto; gap:12px}
+  .stage{background:rgba(18,19,24,.85); border:1px solid rgba(255,255,255,.06); border-radius:var(--radius); overflow:auto; padding:16px; display:flex; flex-direction:column; gap:14px}
+
+  .msg{display:grid; grid-template-columns: 42px 1fr; gap:10px; align-items:flex-start}
+  .msg .avatar{width:42px; height:42px; border-radius:50%; background:#0b1020; display:grid; place-items:center; font-weight:700}
+  .msg.user .avatar{background:linear-gradient(135deg, #7dd3fc, #93c5fd)}
+  .msg.bot .avatar{background:linear-gradient(135deg, #6ee7b7, #34d399)}
+  .bubble{background:#0e1322; border:1px solid rgba(255,255,255,.06); padding:12px 14px; border-radius:12px; box-shadow: var(--shadow)}
+  .bubble h5{margin:0 0 6px 0; font-size:13px; color:var(--muted)}
+  .bubble .tx{white-space:pre-wrap}
+  .bilingual{margin-top:8px; padding-top:8px; border-top:1px dashed rgba(255,255,255,.08)}
+
+  /* Composer */
+  .composer{background:rgba(18,19,24,.85); border:1px solid rgba(255,255,255,.06); border-radius:var(--radius); padding:10px; display:flex; gap:10px; align-items:stretch}
+  .composer textarea{flex:1; resize:none; min-height:52px; max-height:180px; border:none; border-radius:12px; padding:12px; background:#0f1320; color:var(--text)}
+  .controls{display:grid; grid-template-columns: repeat(6, minmax(0,1fr)); gap:10px}
+  .controls .card{background:#0f1320; border:1px solid rgba(255,255,255,.06); border-radius:12px; padding:10px; display:flex; flex-direction:column; gap:8px}
+  label{font-size:12px; color:var(--muted)}
+  select, input[type="range"], button, .toggle{width:100%; background:#0f1320; color:var(--text); border:1px solid rgba(255,255,255,.12); border-radius:10px; padding:8px}
+  .row{display:flex; gap:8px}
+  button{cursor:pointer}
+  .primary{background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#071013; font-weight:700; border:none}
+  .danger{background:linear-gradient(135deg, #fb7185, #ef4444); color:#fff; border:none}
+  .subtle{background:#0f1320}
+  .pill{display:inline-flex; gap:8px; align-items:center; padding:8px 10px; background:#0f1320; border:1px solid rgba(255,255,255,.06); border-radius:999px}
+  .micro{font-size:12px; color:var(--muted)}
+  .sr-only{position:absolute; left:-9999px}
+
+  .blink{animation:blink 1s steps(2, start) infinite}
+  @keyframes blink{to{visibility:hidden}}
+
+  /* Test badges */
+  .tests{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
+  .t-badge{font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.1)}
+  .ok{background:rgba(34,197,94,.12); border-color:rgba(34,197,94,.28)}
+  .fail{background:rgba(239,68,68,.12); border-color:rgba(239,68,68,.28)}
+
+  /* Responsive */
+  @media (max-width: 1100px){
+    .app{grid-template-columns:1fr; grid-template-rows: 72px auto 1fr;}
+    .side{grid-row:2}
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header>
+    <div class="title">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <div style="font-weight:800; font-size:18px">Tutor IA de Alemán – tipo "Learna"</div>
+        <div class="micro">Conversación en tiempo real (alemán / español), feedback, traducción y ejercicios.</div>
+      </div>
+      <span class="badge">DE · ES</span>
+    </div>
+    <div class="row tests" id="selftests"></div>
+    <div class="row">
+      <span class="pill" id="status-pill">
+        <span id="status-text">⏺️ Listo</span>
+        <b id="vad">Mic apagado</b>
+      </span>
+      <button class="primary" id="btn-quick-start">Hablar ahora</button>
+    </div>
+  </header>
+
+  <aside class="side" id="sidebar">
+    <h3>Ruta de aprendizaje</h3>
+    <details class="unit" open>
+      <summary>👶 A1 – Supervivencia</summary>
+      <div class="lessons">
+        <div class="chip" data-lesson="saludos"><b>Saludos & Presentaciones</b><small>Hallo! Wie heißt du?</small></div>
+        <div class="chip" data-lesson="tiempo"><b>Fechas y horas</b><small>Wann? Um wie viel Uhr?</small></div>
+        <div class="chip" data-lesson="trabajo"><b>Trabajo</b><small>Beruf, Arbeitszeit</small></div>
+      </div>
+    </details>
+    <details class="unit">
+      <summary>🗣️ Pronunciación</summary>
+      <div class="lessons">
+        <div class="chip" data-lesson="vocales"><b>Vocales & Umlaut</b><small>ä ö ü</small></div>
+        <div class="chip" data-lesson="s-ch"><b>s / ß / sch / ch</b><small>Fisch, Straße, Buch</small></div>
+      </div>
+    </details>
+    <details class="unit">
+      <summary>💼 B1 – Trabajo y vida diaria</summary>
+      <div class="lessons">
+        <div class="chip" data-lesson="pflege"><b>Pflege</b><small>Enfermería</small></div>
+        <div class="chip" data-lesson="emails"><b>Emails formales</b><small>Anrede & Schluss</small></div>
+      </div>
+    </details>
+
+    <h3>Consejos rápidos</h3>
+    <div class="micro">• Chrome recomendado para reconocimiento de voz (SpeechRecognition).<br/>• No expongas claves en el cliente: usa un proxy backend seguro.<br/>• Guarda y restaura tu configuración (localStorage).</div>
+  </aside>
+
+  <main class="main">
+    <section class="stage" id="stage" aria-live="polite"></section>
+
+    <section class="composer">
+      <textarea id="input" placeholder="Habla o escribe aquí… (Enter = enviar)" rows="2"></textarea>
+      <div class="controls">
+        <div class="card">
+          <label for="mode">Modo de respuesta</label>
+          <select id="mode">
+            <option value="de">Solo en alemán (DE)</option>
+            <option value="es">Solo en español (ES)</option>
+            <option value="de+es" selected>DE + traducción ES</option>
+            <option value="es+de">ES + traducción DE</option>
+          </select>
+        </div>
+        <div class="card">
+          <label for="persona">Profesor (personaje)</label>
+          <select id="persona"></select>
+          <small class="micro" id="persona-desc"></small>
+        </div>
+        <div class="card">
+          <label for="voice">Voz (acento)</label>
+          <select id="voice"></select>
+          <label for="rate">Velocidad</label>
+          <input type="range" id="rate" min="0.5" max="1.8" step="0.1" value="1.0" />
+        </div>
+        <div class="card">
+          <label for="inlang">Idioma de entrada</label>
+          <select id="inlang">
+            <option value="de-DE">Alemán (de-DE)</option>
+            <option value="es-ES" selected>Español (es-ES)</option>
+            <option value="es-MX">Español (es-MX)</option>
+          </select>
+          <div class="row">
+            <button id="btn-mic" class="subtle">🎙️ Mic</button>
+            <button id="btn-stop" class="subtle">⏹️</button>
+          </div>
+          <label class="toggle"><input type="checkbox" id="auto-continue"> Auto-conversación</label>
+        </div>
+        <div class="card">
+          <label for="provider">Proveedor IA</label>
+          <select id="provider">
+            <option value="demo" selected>Demo local (eco)</option>
+            <option value="openai_chat">OpenAI Chat (SSE)</option>
+            <option value="openai_responses">OpenAI Responses (SSE)</option>
+            <option value="ollama">Ollama local (SSE)</option>
+            <option value="generic_sse">Genérico SSE</option>
+          </select>
+          <label for="model">Modelo</label>
+          <input id="model" placeholder="gpt-4.1 | llama3.1 | ..." value="gpt-4.1" />
+        </div>
+        <div class="card">
+          <label for="endpoint">Endpoint / Proxy</label>
+          <input id="endpoint" placeholder="https://TU-PROXY/api/... o http://localhost:11434/api/chat" />
+          <label for="apikey">API Key (proxy)*</label>
+          <input id="apikey" type="password" placeholder="Usa un backend proxy — no claves aquí" />
+          <small class="micro">* Para producción usa un backend. Aquí solo fines de prueba.</small>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<noscript style="color:white;">Necesitas habilitar JavaScript para usar esta app.</noscript>
+
+<script>
+(() => {
+  function ready(fn){
+    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
+    else fn();
+  }
+
+  ready(() => {
+    /**** SHORTCUTS TO DOM ****/
+    const el = (sel) => document.querySelector(sel);
+    const stage = el('#stage');
+    const input = el('#input');
+    const statusTextEl = el('#status-text');
+    const vadEl = el('#vad');
+
+    /**** STATE ****/
+    const state = {
+      messages: [],
+      speaking: false,
+      recognizing: false,
+      voices: [],
+      voiceByName: {},
+      lastAssistantText: '',
+      persona: null,
+      micGranted: false,
+      lastAsrError: null,
+    };
+
+    const personas = [
+      { id:'hans', name:'Hans (DE‑Standard)', desc:'Profesor alemán claro y paciente.', system:`Eres "Hans", profesor nativo de alemán. Habla con claridad y corrige suavemente. Si el modo es "de+es", responde primero en alemán natural (A1–B1 según contexto) y luego ofrece traducción al español, con marcadores de línea. Da feedback breve de pronunciación y un ejemplo extra.` },
+      { id:'eva', name:'Eva (DE‑Suave, Austria)', desc:'Acento austriaco ligero, amigable.', system:`Eres "Eva" de Austria. Usa alemán estándar con notas culturales. Mantén las frases cortas y ritmo pausado si el usuario lo pide. Si el modo es bilingüe, añade traducción al final.` },
+      { id:'mateo', name:'Mateo (ES‑Colombia)', desc:'Explica en español, refuerza alemán.', system:`Eres "Mateo". Explicas en español claro y haces que el alumno repita en alemán. Cuando el modo lo requiera, alterna ES/DE con secciones "DE:" y "ES:".` },
+      { id:'jasmine', name:'Jasmine (EN‑Support)', desc:'Solo para aclaraciones puntuales en EN.', system:`Eres "Jasmine". Solo usas inglés si el alumno se atasca; por defecto responde en alemán.` },
+    ];
+
+    /**** HELPERS ****/
+    function addMessage(role, text, alt) {
+      const wrap = document.createElement('div');
+      wrap.className = `msg ${role==='user' ? 'user':'bot'}`;
+      wrap.innerHTML = `
+        <div class="avatar">${role==='user'?'👤':'🎓'}</div>
+        <div class="bubble">
+          <h5>${role==='user'?'Tú':'Profesor IA'}</h5>
+          <div class="tx">${escapeHTML(text)}</div>
+          ${alt? `<div class="bilingual micro">${escapeHTML(alt)}</div>`:''}
+        </div>`;
+      stage.appendChild(wrap);
+      stage.scrollTop = stage.scrollHeight;
+    }
+    function updateStatus(html){ if(statusTextEl){ statusTextEl.innerHTML = html; } }
+    function setMicLabel(txt){ if(vadEl) vadEl.textContent = txt; }
+    function escapeHTML(str){ return (str||'').replace(/[&<>\"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c])); }
+
+    /**** ENV WARNINGS ****/
+    const isSecure = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    if(!isSecure){ addMessage('bot', '⚠️ Para usar el micrófono, abre esta página con **HTTPS** o en **localhost**.'); }
+
+    /**** Speech Synthesis ****/
+    const synth = window.speechSynthesis;
+    let selectedVoice = null;
+    function loadVoices(){
+      const voices = synth.getVoices();
+      state.voices = voices;
+      state.voiceByName = Object.fromEntries(voices.map(v=>[v.name, v]));
+      const sel = el('#voice'); if(!sel) return; sel.innerHTML='';
+      const prefer = ['de-DE','de-AT','de-CH','es-ES','es-MX','es-CO'];
+      const sorted = [...voices].sort((a,b)=>{
+        const ap = prefer.some(p=>a.lang.startsWith(p));
+        const bp = prefer.some(p=>b.lang.startsWith(p));
+        return (ap===bp? a.name.localeCompare(b.name) : (ap? -1:1));
+      });
+      for(const v of sorted){ const opt = document.createElement('option'); opt.value = v.name; opt.textContent = `${v.name} — ${v.lang}`; sel.appendChild(opt); }
+      const auto = sorted.find(v=>v.lang.startsWith('de'))||sorted.find(v=>v.lang.startsWith('es'))||sorted[0];
+      if(auto){ sel.value = auto.name; selectedVoice = auto; }
+    }
+    if (speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = loadVoices;
+    loadVoices();
+
+    function speak(text){
+      if(!text) return;
+      const u = new SpeechSynthesisUtterance(text);
+      const rate = parseFloat(el('#rate').value||'1.0');
+      u.rate = rate; u.voice = selectedVoice || null;
+      u.onstart = ()=> state.speaking = true;
+      u.onend = ()=> state.speaking = false;
+      synth.cancel();
+      synth.speak(u);
+    }
+
+    /**** Speech Recognition ****/
+    const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let rec = null;
+
+    async function ensureMicPermission(){
+      if(!navigator.mediaDevices?.getUserMedia){ return false; }
+      try{
+        const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+        stream.getTracks().forEach(t=>t.stop());
+        state.micGranted = true;
+        return true;
+      }catch(err){
+        state.micGranted = false;
+        addMessage('bot', '🚫 Permiso de micrófono denegado o no disponible: '+ (err && err.name ? err.name : 'unknown'));
+        return false;
+      }
+    }
+
+    function initRec(){
+      if(!Rec){ updateStatus('⚠️ Reconocimiento no soportado por este navegador'); return; }
+      rec = new Rec();
+      rec.continuous = true;
+      rec.interimResults = true;
+      rec.lang = el('#inlang').value;
+      rec.onresult = (e)=>{
+        let final=''; let interim='';
+        for (let i = e.resultIndex; i < e.results.length; i++){
+          const res=e.results[i];
+          if(res.isFinal) final += res[0].transcript; else interim += res[0].transcript;
+        }
+        if(interim) updateStatus('🗣️ Escuchando… <span class="blink">· · ·</span>');
+        if(final){ updateStatus('⏺️ Procesando…'); handleUserText(final.trim()); }
+      };
+      rec.onstart = ()=> { state.recognizing = true; setMicLabel('Mic encendido'); };
+      rec.onend = ()=> {
+        state.recognizing = false; setMicLabel('Mic apagado');
+        if(state.lastAsrError === 'not-allowed') return;
+        if(el('#auto-continue')?.checked){ startMic(); }
+      };
+      rec.onerror = (ev)=> {
+        state.lastAsrError = ev?.error || null;
+        console.warn('ASR error', ev);
+        let msg = '⚠️ Error ASR';
+        if(ev.error === 'not-allowed') msg = '🚫 Mic bloqueado por permisos del navegador (not-allowed).';
+        else if(ev.error === 'network') msg = '⚠️ Error de red del servicio de voz.';
+        else if(ev.error === 'no-speech') msg = '🤫 No se detectó voz (no-speech).';
+        updateStatus(msg);
+      };
+    }
+    initRec();
+
+    async function startMic(){
+      const isSecure = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+      if(!isSecure){ addMessage('bot','🔒 Necesitas HTTPS o localhost para permisos de micrófono.'); return; }
+      if(!Rec){ addMessage('bot','⚠️ Tu navegador no soporta Web Speech (usa Chrome/Edge).'); return; }
+      if(!state.micGranted){ const ok = await ensureMicPermission(); if(!ok) return; }
+      try{
+        if(!rec) initRec();
+        rec.lang = el('#inlang').value;
+        rec.start();
+        updateStatus('🎙️ Grabando…');
+      }catch(err){
+        console.error('startMic error', err);
+        addMessage('bot', '⚠️ No se pudo iniciar el micrófono: '+ (err && err.name ? err.name : err));
+      }
+    }
+    function stopMic(){ try{ rec && rec.stop(); updateStatus('⏹️ Detenido'); }catch{} }
+
+    /**** Conversation ****/
+    function systemPrompt(){
+      const mode = el('#mode').value; const p = state.persona || personas[0];
+      return `Eres un profesor virtual de alemán. Personaje: ${p.name}. ${p.system}
+Reglas de salida: \n- Modo actual: ${mode} (usa etiquetas DE:/ES: si es bilingüe).\n- Sé directo, natural y claro. Pausa y marca sílabas si el alumno lo pide (\u00B7).\n- Cuando corrijas, muestra: \n"Corrección:" + frase corregida \n"Por qué:" + explicación breve.\n`;
+    }
+
+    function messagePayload(){
+      const messages = state.messages.map(m=>({role:m.role, content:m.content}));
+      const sys = {role:'system', content: systemPrompt()};
+      if(messages.length && messages[0].role==='system') messages[0]=sys; else messages.unshift(sys);
+      return messages;
+    }
+
+    async function handleUserText(text){
+      if(!text) return;
+      addMessage('user', text);
+      state.messages.push({role:'user', content:text});
+      input.value='';
+      const provider = el('#provider').value; let stream;
+      try{
+        if(provider==='demo'){
+          const mode = el('#mode').value;
+          const de = mode.startsWith('de') ? `DE: ${fakeGerman(text)}` : '';
+          const es = mode.endsWith('es') ? `ES: ${fakeSpanish(text)}` : '';
+          const out = [de, es].filter(Boolean).join("\n\n");
+          renderAssistantStream(out);
+        } else if(provider==='openai_chat'){
+          stream = streamOpenAIChat();
+        } else if(provider==='openai_responses'){
+          stream = streamOpenAIResponses();
+        } else if(provider==='ollama'){
+          stream = streamOllama();
+        } else if(provider==='generic_sse'){
+          stream = streamGenericSSE();
+        }
+        if(stream){ await stream; }
+      }catch(err){ console.error(err); addMessage('bot', '⚠️ Error al obtener respuesta: '+err.message); }
+    }
+
+    // Render incremental
+    let assembling = '';
+    let assemblingNode = null;
+    function beginAssistant(){
+      assembling = '';
+      assemblingNode = document.createElement('div');
+      assemblingNode.className='msg bot';
+      assemblingNode.innerHTML = `<div class=\"avatar\">🎓</div><div class=\"bubble\"><h5>Profesor IA</h5><div class=\"tx\" id=\"tmain\"></div><div class=\"bilingual micro\" id=\"talt\"></div></div>`;
+      stage.appendChild(assemblingNode); stage.scrollTop = stage.scrollHeight;
+    }
+    function pushAssistantDelta(delta){ if(!assemblingNode) beginAssistant(); assembling += delta; assemblingNode.querySelector('#tmain').textContent = assembling; stage.scrollTop = stage.scrollHeight; }
+    function endAssistant(){ try{ const mode = el('#mode').value; const toSpeak = extractPrimaryText(assembling, mode); if(toSpeak) speak(toSpeak); }catch{} state.messages.push({role:'assistant', content: assembling}); assemblingNode = null; state.lastAssistantText = assembling; }
+    function renderAssistantStream(fullText){ beginAssistant(); pushAssistantDelta(fullText); endAssistant(); }
+
+    function extractPrimaryText(txt, mode){
+      if(mode==='de+es'){ const m = txt.match(/DE:\s*([\s\S]*?)(?:\n\nES:|$)/i); return m? m[1].trim(): txt; }
+      if(mode==='es+de'){ const m = txt.match(/ES:\s*([\s\S]*?)(?:\n\nDE:|$)/i); return m? m[1].trim(): txt; }
+      return txt;
+    }
+
+    /**** Providers ****/
+    async function streamOpenAIChat(){
+      const endpoint = el('#endpoint').value || 'https://api.openai.com/v1/chat/completions';
+      const apikey = el('#apikey').value; const model = el('#model').value || 'gpt-4.1';
+      beginAssistant();
+      const res = await fetch(endpoint, { method:'POST', headers:{ 'Content-Type':'application/json','Authorization': 'Bearer '+apikey }, body: JSON.stringify({ model, stream:true, messages: messagePayload() })});
+      const reader = res.body.getReader(); const decoder = new TextDecoder();
+      while(true){ const {done, value} = await reader.read(); if(done) break; const chunk = decoder.decode(value, {stream:true}); const lines = chunk.split('\n'); for(const line of lines){ if(!line.startsWith('data:')) continue; const data = line.replace(/^data:\s*/, ''); if(data === '[DONE]'){ endAssistant(); return; } try{ const json = JSON.parse(data); const delta = json.choices?.[0]?.delta?.content || ''; if(delta) pushAssistantDelta(delta); }catch{} } }
+      endAssistant();
+    }
+
+    async function streamOpenAIResponses(){
+      const endpoint = el('#endpoint').value || 'https://api.openai.com/v1/responses';
+      const apikey = el('#apikey').value; const model = el('#model').value || 'gpt-4.1';
+      beginAssistant();
+      const res = await fetch(endpoint, { method:'POST', headers:{ 'Content-Type':'application/json','Authorization': 'Bearer '+apikey }, body: JSON.stringify({ model, input: [{ role:'system', content: systemPrompt() }, ...state.messages], stream: true })});
+      const reader = res.body.getReader(); const decoder = new TextDecoder();
+      while(true){ const {done, value} = await reader.read(); if(done) break; const chunk = decoder.decode(value, {stream:true}); for(const line of chunk.split('\n')){ if(!line.startsWith('data:')) continue; const data=line.slice(5).trim(); if(!data||data==='[DONE]'){ if(data==='[DONE]') endAssistant(); continue; } try{ const evt = JSON.parse(data); const delta = (evt?.output_text?.delta) || (evt?.response?.output_text?.delta) || ''; if(delta) pushAssistantDelta(delta); }catch(e){} } }
+      endAssistant();
+    }
+
+    async function streamOllama(){
+      const endpoint = el('#endpoint').value || 'http://localhost:11434/api/chat';
+      const model = el('#model').value || 'llama3.1';
+      beginAssistant();
+      const res = await fetch(endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ model, messages: messagePayload().map(m=>({role:m.role, content:m.content})), stream:true }) });
+      const reader = res.body.getReader(); const decoder = new TextDecoder();
+      while(true){ const {done, value} = await reader.read(); if(done) break; const chunk = decoder.decode(value, {stream:true}); for(const line of chunk.split('\n')){ if(!line.trim()) continue; try{ const j = JSON.parse(line); if(j.message?.content) pushAssistantDelta(j.message.content); if(j.done){ endAssistant(); return; } }catch{} } }
+      endAssistant();
+    }
+
+    async function streamGenericSSE(){
+      const endpoint = el('#endpoint').value; if(!endpoint){ addMessage('bot','Configura un endpoint SSE primero.'); return; }
+      beginAssistant();
+      const res = await fetch(endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ messages: messagePayload() }) });
+      const reader = res.body.getReader(); const decoder = new TextDecoder();
+      while(true){ const {done, value} = await reader.read(); if(done) break; const chunk = decoder.decode(value, {stream:true}); for(const line of chunk.split('\n')){ if(!line.startsWith('data:')) continue; const data=line.slice(5).trim(); if(data==='[DONE]'){ endAssistant(); return; } try{ const j = JSON.parse(data); const delta = j.delta || j.text || j.content || ''; if(delta) pushAssistantDelta(delta); }catch{ pushAssistantDelta(data); } } }
+      endAssistant();
+    }
+
+    /**** Demo helpers ****/
+    function fakeGerman(txt){ return `DE: ${txt}\n(← Esto es eco de prueba. Conecta tu API para respuestas reales.)`; }
+    function fakeSpanish(txt){ return `ES: ${txt}`; }
+
+    /**** UI wiring ****/
+    const personaSel = el('#persona');
+    for (const p of personas){ const opt=document.createElement('option'); opt.value=p.id; opt.textContent=p.name; personaSel.appendChild(opt); }
+    state.persona = personas[0]; personaSel.value = state.persona.id; el('#persona-desc').textContent = state.persona.desc;
+    personaSel.addEventListener('change', ()=>{ state.persona = personas.find(x=>x.id===personaSel.value)||personas[0]; el('#persona-desc').textContent = state.persona.desc; });
+
+    el('#voice').addEventListener('change', (e)=>{ state.voiceByName && (selectedVoice = state.voiceByName[e.target.value]); });
+    el('#rate').addEventListener('input', ()=>{});
+    el('#inlang').addEventListener('change', ()=>{ if(rec) rec.lang = el('#inlang').value; });
+
+    el('#btn-mic').addEventListener('click', ()=>{ state.recognizing? stopMic() : startMic(); });
+    el('#btn-stop').addEventListener('click', ()=>{ stopMic(); window.speechSynthesis.cancel(); });
+    el('#btn-quick-start').addEventListener('click', ()=>{ startMic(); input.focus(); });
+
+    input.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); const t=input.value.trim(); if(t) handleUserText(t); } });
+
+    /**** Persistencia ****/
+    const persistKeys = ['mode','persona','voice','rate','inlang','provider','model','endpoint'];
+    function save(){ const obj={}; for(const k of persistKeys){ const elx = document.getElementById(k); obj[k]= elx?.value || null; } localStorage.setItem('de_tutor_cfg', JSON.stringify(obj)); }
+    function load(){ try{ const obj = JSON.parse(localStorage.getItem('de_tutor_cfg')||'{}'); for(const k of persistKeys){ const elx=document.getElementById(k); if(elx && obj[k]!=null){ elx.value = obj[k]; } } if(obj['voice']) selectedVoice = state.voiceByName[obj['voice']] || selectedVoice; }catch{} }
+    window.addEventListener('beforeunload', save);
+    setTimeout(()=>{ load(); }, 500);
+
+    /**** Mensaje inicial ****/
+    addMessage('bot', 'Willkommen! / ¡Bienvenido!\n\nIndica tu modo de respuesta (DE/ES/bilingüe), elige un personaje y pulsa «Hablar ahora».\n\nPara respuestas reales, selecciona un proveedor (OpenAI/Ollama) y configura tu endpoint proxy.');
+
+    /**** SELF TESTS ****/
+    function badge(text, ok){ const b=document.createElement('span'); b.className=`t-badge ${ok?'ok':'fail'}`; b.textContent = (ok?'✔ ':'✗ ')+text; return b; }
+    const testsEl = document.getElementById('selftests');
+    try{
+      testsEl.appendChild(badge('#status-pill existe', !!document.getElementById('status-pill')));
+      testsEl.appendChild(badge('#status-text existe', !!document.getElementById('status-text')));
+      testsEl.appendChild(badge('#vad existe', !!document.getElementById('vad')));
+      testsEl.appendChild(badge('HTTPS/localhost', isSecure));
+      const asrSupported = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+      testsEl.appendChild(badge('Web Speech soportado', asrSupported));
+      const beforeHadVad = !!document.getElementById('vad');
+      updateStatus('🧪 Test de estado');
+      const afterHadVad = !!document.getElementById('vad');
+      testsEl.appendChild(badge('updateStatus mantiene #vad', beforeHadVad && afterHadVad));
+      testsEl.appendChild(badge('#stage y #input existen', !!stage && !!input));
+    }catch(e){ testsEl.appendChild(badge('Self-tests lanzaron excepción', false)); console.error(e); }
+
+  });
+})();
+</script>
+</body>
+</html>
